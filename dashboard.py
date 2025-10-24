@@ -44,7 +44,7 @@ st.markdown(
 @st.cache_resource
 def load_models():
     yolo_model = YOLO("model/Yumnaa_Alifah_Laporan_4.pt")  # Model YOLO
-    classifier = tf.keras.models.load_model("model/Yumnaa_Alifah_Laporan_2.h5")  # Model Klasifikasi Sampah
+    classifier = tf.keras.models.load_model("model/Yumnaa_Alifah_Laporan 2.h5")  # Model Klasifikasi Sampah
     return yolo_model, classifier
 
 with st.spinner("🔄 Sedang memuat model... Mohon tunggu sebentar"):
