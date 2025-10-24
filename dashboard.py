@@ -15,29 +15,6 @@ st.set_page_config(
     page_icon="🌸"
 )
 
-st.markdown("""
-    <style>
-        [data-testid="stAppViewContainer"] {
-            background-color: #fff6fa;
-        }
-        [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #f8bbd0, #fce4ec);
-            color: #4a148c;
-        }
-        h1, h2, h3, h4 {
-            color: #e91e63 !important;
-            font-family: 'Poppins', sans-serif;
-        }
-        .stButton>button {
-            background-color: #ec407a !important;
-            color: white !important;
-            border-radius: 12px !important;
-            font-weight: 600 !important;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
-
 # ----------------------------
 # CSS TEMA PINK CUSTOM
 # ----------------------------
