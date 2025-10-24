@@ -2,6 +2,8 @@ streamlit
 tensorflow
 ultralytics
 pillow
+numpy
 opencv-python
 ultralytics
 opencv-python-headless
+h5py
