@@ -124,17 +124,18 @@ if uploaded_file is not None:
     elif menu == "♻️ Klasifikasi Sampah":
         st.subheader("🌿 Hasil Klasifikasi Gambar")
         with st.spinner("💫 Sedang memproses gambar..."):
-            img_resized = img.resize((224, 224))
-            img_array = image.img_to_array(img_resized)
-            img_array = np.expand_dims(img_array, axis=0)
-            img_array = img_array / 255.0
+            img = Image.open(uploaded_file).convert('RGB')  # pastikan 3 channel
+            img = img.resize((224, 224))  # samakan ukuran input dengan model
+            img_array = np.array(img) / 255.0  # normalisasi (0–1)
+            img_array = np.expand_dims(img_array, axis=0)  # tambah dimensi batch
+
 
             prediction = classifier.predict(img_array)
             class_index = np.argmax(prediction)
             confidence = np.max(prediction)
 
         # Label kategori sampah
-        waste_labels = ["Sampah Kaca", "Sampah Logam", "Sampah Kertas", "Sampah Plastik", "Sampah Organik"]
+        waste_labels = ["Kaca", "Kardus", "Kertas", "Plastik", "Logam", "Residu"]
         predicted_label = waste_labels[class_index] if class_index < len(waste_labels) else "Tidak Dikenali"
 
         st.markdown(f"<h3 style='color:#e75480;'>💡 Jenis Sampah: <b>{predicted_label}</b></h3>", unsafe_allow_html=True)
