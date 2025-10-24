@@ -122,25 +122,36 @@ if uploaded_file is not None:
         st.info("Model ini dapat mendeteksi kategori seperti **mobile**, **supercar**, dan **laptop**.")
 
     elif menu == "♻️ Klasifikasi Sampah":
-        st.subheader("🌿 Hasil Klasifikasi Gambar")
-        with st.spinner("💫 Sedang memproses gambar..."):
-            img = Image.open(uploaded_file).convert('RGB')  # pastikan 3 channel
-            img = img.resize((224, 224))  # samakan ukuran input dengan model
-            img_array = np.array(img) / 255.0  # normalisasi (0–1)
-            img_array = np.expand_dims(img_array, axis=0)  # tambah dimensi batch
+    st.subheader("🌿 Hasil Klasifikasi Gambar")
+    with st.spinner("💫 Sedang memproses gambar..."):
+        # ====== Periksa input shape model ======
+        input_shape = classifier.input_shape[1:4]  # contoh (224,224,3)
+        st.write("🔹 Input shape model:", input_shape)
 
+        # ====== Preprocessing otomatis menyesuaikan model ======
+        color_mode = 'RGB' if input_shape[2] == 3 else 'L'  # RGB atau grayscale
+        img = Image.open(uploaded_file).convert(color_mode)
+        img = img.resize((input_shape[0], input_shape[1]))
+        img_array = np.array(img, dtype=np.float32) / 255.0
 
-            prediction = classifier.predict(img_array)
-            class_index = np.argmax(prediction)
-            confidence = np.max(prediction)
+        # Tambahkan channel jika grayscale
+        if input_shape[2] == 1:
+            img_array = np.expand_dims(img_array, axis=-1)
 
-        # Label kategori sampah
-        waste_labels = ["Kaca", "Kardus", "Kertas", "Plastik", "Logam", "Residu"]
-        predicted_label = waste_labels[class_index] if class_index < len(waste_labels) else "Tidak Dikenali"
+        img_array = np.expand_dims(img_array, axis=0)  # jadi (1, H, W, C)
 
-        st.markdown(f"<h3 style='color:#e75480;'>💡 Jenis Sampah: <b>{predicted_label}</b></h3>", unsafe_allow_html=True)
-        st.progress(float(confidence))
-        st.caption(f"💗 Tingkat Keyakinan Model: {confidence:.2%}")
+        # ====== Prediksi ======
+        prediction = classifier.predict(img_array)
+        class_index = np.argmax(prediction)
+        confidence = np.max(prediction)
+
+    waste_labels = ["Kaca", "Kardus", "Kertas", "Plastik", "Logam", "Residu"]
+    predicted_label = waste_labels[class_index] if class_index < len(waste_labels) else "Tidak Dikenali"
+
+    st.write(f"### 🌸 Jenis Sampah: **{predicted_label}**")
+    st.progress(float(confidence))
+    st.caption(f"Probabilitas: {confidence:.2%}")
+
 
         if confidence > 0.85:
             st.success("🌟 Prediksi sangat akurat!")
