@@ -3,207 +3,128 @@ from ultralytics import YOLO
 import tensorflow as tf
 import numpy as np
 from PIL import Image
-import time
-import os
+import cv2
 
-# ============================
-# KONFIGURASI DASAR DASHBOARD
-# ============================
+# ==========================
+# Konfigurasi Halaman
+# ==========================
 st.set_page_config(
-    page_title="💗 Smart Vision Dashboard by Yumnaa",
+    page_title="Dashboard Deteksi & Klasifikasi Citra",
+    page_icon="💗",
     layout="wide",
-    page_icon="🌸"
 )
 
-# ----------------------------
-# CSS TEMA PINK CUSTOM
-# ----------------------------
-pink_css = """
-<style>
-/* Warna dasar */
-body {
-    background-color: #fff6fa;
-}
+# ==========================
+# CSS Tema Pink Lembut
+# ==========================
+st.markdown("""
+    <style>
+        /* Warna utama halaman */
+        [data-testid="stAppViewContainer"] {
+            background: linear-gradient(135deg, #ffe6f0 0%, #fff5fa 100%);
+        }
 
-/* Header */
-h1, h2, h3, h4 {
-    color: #e91e63 !important;
-    font-family: 'Poppins', sans-serif;
-}
+        /* Sidebar */
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #f8bbd0, #fce4ec);
+            color: #4a148c;
+        }
 
-/* Sidebar */
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #f8bbd0, #fce4ec);
-    color: #4a148c;
-}
+        /* Judul dan subjudul */
+        h1, h2, h3, h4 {
+            color: #e91e63 !important;
+            font-family: 'Poppins', sans-serif;
+        }
 
-/* Tombol */
-button, .stButton>button {
-    background-color: #ec407a !important;
-    color: white !important;
-    border-radius: 15px !important;
-    font-weight: 600 !important;
-    border: none !important;
-}
+        /* Tombol */
+        .stButton>button {
+            background-color: #ec407a !important;
+            color: white !important;
+            border-radius: 10px !important;
+            font-weight: bold !important;
+            transition: 0.3s;
+        }
+        .stButton>button:hover {
+            background-color: #d81b60 !important;
+            transform: scale(1.05);
+        }
 
-/* Judul */
-.title-text {
-    font-family: 'Poppins', sans-serif;
-    color: #d81b60;
-    font-weight: 700;
-    text-align: center;
-    font-size: 40px;
-}
+        /* Footer info */
+        .footer {
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            color: #ad1457;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+        }
 
-/* Subtitle */
-.subtext {
-    text-align: center;
-    font-size: 18px;
-    color: #ad1457;
-}
+        /* Box hasil */
+        .result-box {
+            background-color: #fff0f6;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(233, 30, 99, 0.15);
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-/* Card style */
-.block-container {
-    border-radius: 20px;
-}
-
-/* Footer */
-.footer {
-    text-align: center;
-    color: #880e4f;
-    font-size: 15px;
-    margin-top: 60px;
-}
-</style>
-"""
-st.markdown(pink_css, unsafe_allow_html=True)
-
-# ----------------------------
-# INFO HEADER
-# ----------------------------
-st.markdown("<div class='title-text'>💗 Smart Vision Dashboard</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtext'>Aplikasi Deteksi & Klasifikasi Gambar oleh <b>Yumnaa Alifah</b><br>Mahasiswa Statistika, Universitas Syiah Kuala 🌸</div>", unsafe_allow_html=True)
-st.markdown("---")
-
-# ----------------------------
-# Fungsi pencarian model
-# ----------------------------
-def find_file_try(paths):
-    for p in paths:
-        if os.path.exists(p):
-            return p
-    return None
-
-# ----------------------------
-# Load model
-# ----------------------------
+# ==========================
+# Load Model
+# ==========================
 @st.cache_resource
 def load_models():
-    yolo_candidates = [
-        "model/Yumnaa_Alifah_Laporan_4.pt",
-        "Yumnaa_Alifah_Laporan_4.pt",
-        "/mnt/data/Yumnaa_Alifah_Laporan_4.pt"
-    ]
-    clf_candidates = [
-        "model/Yumnaa_Alifah_Laporan 2.h5",
-        "model/Yumnaa_Alifah_Laporan_2.h5",
-        "Yumnaa_Alifah_Laporan 2.h5",
-        "/mnt/data/Yumnaa_Alifah_Laporan 2.h5"
-    ]
-
-    yolo_path = find_file_try(yolo_candidates)
-    clf_path = find_file_try(clf_candidates)
-
-    if yolo_path is None:
-        raise FileNotFoundError("Model YOLO (.pt) tidak ditemukan.")
-    if clf_path is None:
-        raise FileNotFoundError("Model classifier (.h5) tidak ditemukan.")
-
-    yolo_model = YOLO(yolo_path)
-    classifier = tf.keras.models.load_model(clf_path)
+    yolo_model = YOLO("Yumnaa Alifah_Laporan 4.pt")  # Model deteksi YOLO
+    classifier = tf.keras.models.load_model("classifier_model.h5")  # Model klasifikasi .h5
     return yolo_model, classifier
 
-try:
-    with st.spinner("💞 Memuat model AI..."):
-        yolo_model, classifier = load_models()
-        time.sleep(0.5)
-    st.success("🌸 Model berhasil dimuat!")
-except Exception as e:
-    st.error("❌ Gagal memuat model.")
-    st.exception(e)
-    st.stop()
+yolo_model, classifier = load_models()
 
-# ----------------------------
-# Sidebar
-# ----------------------------
-st.sidebar.markdown("### 🌷 Navigasi")
-menu = st.sidebar.radio(
-    "Pilih Mode Analisis:",
-    ["💎 Deteksi Objek (YOLO)", "♻️ Klasifikasi Sampah"]
-)
-uploaded_file = st.sidebar.file_uploader("📤 Unggah Gambar", type=["jpg", "jpeg", "png"])
-st.sidebar.markdown("---")
-st.sidebar.markdown("✨ <b>Smart Vision Dashboard</b><br>Dikembangkan oleh <b>Yumnaa Alifah</b><br>Mahasiswa Statistika USK 💗", unsafe_allow_html=True)
+# ==========================
+# Header Dashboard
+# ==========================
+st.title("💗 Aplikasi Deteksi & Klasifikasi Citra")
+st.markdown("### Oleh: **Yumnaa Alifah | Statistika Universitas Syiah Kuala**")
 
-# ----------------------------
-# Preprocessing helper
-# ----------------------------
-def preprocess_for_classifier(pil_img, classifier):
-    default_size = (128, 128)
-    in_shape = classifier.input_shape
-    expects_flat_vector = False
-    target_h, target_w = default_size
+st.write("Unggah gambar di bawah ini untuk mendeteksi objek dan mengklasifikasikannya menggunakan model yang telah dilatih.")
 
-    if in_shape is not None:
-        if len(in_shape) == 4:
-            target_h = int(in_shape[1]) if in_shape[1] else 128
-            target_w = int(in_shape[2]) if in_shape[2] else 128
-        elif len(in_shape) == 2:
-            expects_flat_vector = True
+# ==========================
+# Upload File
+# ==========================
+uploaded_file = st.file_uploader("📤 Unggah gambar di sini", type=["jpg", "jpeg", "png"])
 
-    if pil_img.mode != "RGB":
-        pil_img = pil_img.convert("RGB")
-
-    pil_resized = pil_img.resize((target_w, target_h))
-    arr = np.array(pil_resized).astype(np.float32) / 255.0
-    arr = np.expand_dims(arr, axis=0)
-
-    if expects_flat_vector:
-        arr = arr.reshape((1, -1))
-    return arr
-
-# ----------------------------
-# Main Logic
-# ----------------------------
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    st.image(image, caption="🖼️ Gambar yang Diunggah", use_container_width=True)
+    st.image(image, caption="Gambar yang diunggah", use_container_width=True)
 
-    if menu == "💎 Deteksi Objek (YOLO)":
-        st.subheader("🔍 Hasil Deteksi Objek")
-        with st.spinner("🚀 Mendeteksi objek..."):
-            results = yolo_model(image)
-            result_img = results[0].plot()
-            st.image(result_img, caption="💖 Hasil Deteksi Objek", use_container_width=True)
-        st.success("✨ Deteksi selesai!")
+    # Tombol deteksi
+    if st.button("🔍 Jalankan Deteksi"):
+        st.markdown("<div class='result-box'>", unsafe_allow_html=True)
 
-    elif menu == "♻️ Klasifikasi Sampah":
-        st.subheader("🌿 Hasil Klasifikasi Gambar")
-        with st.spinner("💫 Mengklasifikasikan gambar..."):
-            arr = preprocess_for_classifier(image, classifier)
-            prediction = classifier.predict(arr)
-            class_index = np.argmax(prediction)
-            confidence = float(np.max(prediction))
-            waste_labels = ["Kaca", "Kardus", "Kertas", "Plastik", "Logam", "Residu"]
-            predicted_label = waste_labels[class_index] if class_index < len(waste_labels) else f"Kelas {class_index}"
+        # Deteksi dengan YOLO
+        results = yolo_model.predict(np.array(image))
+        st.subheader("📸 Hasil Deteksi YOLO")
+        for result in results:
+            result_image = result.plot()
+            st.image(result_image, caption="Hasil Deteksi", use_container_width=True)
 
-        st.success(f"✅ Prediksi: **{predicted_label}**")
-        st.progress(confidence)
-        st.caption(f"🎯 Keyakinan model: {confidence:.2%}")
-else:
-    st.info("⬅️ Unggah gambar di sidebar untuk memulai analisis 💗")
+        # Klasifikasi menggunakan model .h5
+        img = image.resize((128, 128))
+        img_array = np.expand_dims(np.array(img) / 255.0, axis=0)
+        predictions = classifier.predict(img_array)
+        predicted_class = np.argmax(predictions, axis=1)[0]
 
-# ----------------------------
-# Footer Bio
-# ----------------------------
-st.markdown("<div class='footer'>💗 Dibuat oleh <b>Yumnaa Alifah</b><br>Mahasiswa Statistika — Universitas Syiah Kuala 🌸</div>", unsafe_allow_html=True)
+        st.subheader("🎯 Hasil Klasifikasi")
+        st.write(f"**Kelas Prediksi:** {predicted_class}")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+# ==========================
+# Footer
+# ==========================
+st.markdown("""
+    <div class='footer'>
+        💕 Dashboard ini dibuat oleh <b>Yumnaa Alifah</b><br>
+        Mahasiswi Statistika, Universitas Syiah Kuala
+    </div>
+""", unsafe_allow_html=True)
