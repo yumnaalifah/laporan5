@@ -55,66 +55,42 @@ if uploaded_file is not None:
         st.success("✨ Deteksi selesai!")
 
     # MODE 2: KLASIFIKASI SAMPAH
-    elif menu == "♻️ Klasifikasi Sampah":
-        st.subheader("🌿 Hasil Klasifikasi Gambar")
+import streamlit as st
+from tensorflow.keras.preprocessing import image
+import numpy as np
+from PIL import Image
+import tensorflow as tf
 
-        with st.spinner("💫 Sedang memproses gambar..."):
-            try:
-                # --- Info Input Model ---
-                in_shape = classifier.input_shape
-                st.write("📏 Bentuk input model:", in_shape)
+# ==========================
+# Load model
+# ==========================
+@st.cache_resource
+def load_models():
+    model = tf.keras.models.load_model("Yumnaa_Alifah_Laporan 2.h5")
+    return model
 
-                # --- Resize gambar sesuai model ---
-                target_size = (224, 224)
-                pil_img = Image.open(uploaded_file).convert("RGB")
-                pil_img = pil_img.resize(target_size)
-                img_arr = np.array(pil_img).astype(np.float32) / 255.0
-                img_arr = np.expand_dims(img_arr, axis=0)  # (1, 224, 224, 3)
+model = load_models()
 
-                # --- Deteksi apakah model butuh input flatten ---
-                flat_len = np.prod(img_arr.shape[1:])
-                if len(in_shape) == 2 and in_shape[1] == flat_len:
-                    st.info("📎 Model ini mengharapkan input yang sudah di-flatten.")
-                    img_arr = img_arr.reshape((1, flat_len))
-                    st.write("🧩 Bentuk setelah flatten:", img_arr.shape)
-                elif len(in_shape) == 2 and in_shape[1] != flat_len:
-                    st.warning(f"⚠️ Model butuh {in_shape[1]} fitur, bukan {flat_len}. "
-                               f"Disesuaikan otomatis jika memungkinkan.")
-                    img_arr = img_arr.reshape((1, in_shape[1]))
-                else:
-                    st.write("🧠 Model ini menerima input citra 3D:", img_arr.shape)
+# ==========================
+# Upload image
+# ==========================
+uploaded_file = st.file_uploader("Upload gambar", type=["jpg", "jpeg", "png"])
 
-                # --- Prediksi ---
-                prediction = classifier.predict(img_arr)
-                class_index = int(np.argmax(prediction))
-                confidence = float(np.max(prediction))
+if uploaded_file is not None:
+    img = Image.open(uploaded_file).convert("RGB")
 
-                # --- Label Kategori ---
-                waste_labels = ["Kaca", "Kardus", "Kertas", "Plastik", "Logam", "Residu"]
-                predicted_label = waste_labels[class_index] if class_index < len(waste_labels) else "Tidak Dikenali"
+    # Resize agar sesuai input model
+    img_resized = img.resize((128, 128))
+    st.image(img_resized, caption="Gambar yang diunggah", use_container_width=True)
 
-                # --- Tampilkan Hasil ---
-                st.success(f"✅ Jenis Sampah: **{predicted_label}**")
-                st.progress(confidence)
-                st.caption(f"🎯 Probabilitas: {confidence:.2%}")
+    # Konversi ke array dan normalisasi
+    img_array = image.img_to_array(img_resized)
+    img_array = np.expand_dims(img_array, axis=0)  # (1, 128, 128, 3)
+    img_array = img_array / 255.0  # Normalisasi
 
-            except Exception as e:
-                st.error("❌ Terjadi kesalahan saat klasifikasi.")
-                st.exception(e)
+    # Prediksi
+    prediction = model.predict(img_array)
+    predicted_class = np.argmax(prediction, axis=1)
 
-else:
-    st.info("⬅️ Silakan unggah gambar terlebih dahulu di sidebar untuk mulai analisis.")
-
-# ==============================
-# 🌸 FOOTER
-# ==============================
-st.markdown("---")
-st.markdown(
-    """
-    <div style='text-align: center; color: gray; font-size: 14px;'>
-    🌸 <b>Smart Vision Dashboard</b> © 2025 — Dibuat oleh <b>Yumnaa Alifah</b><br>
-    <i>Menggabungkan kecerdasan buatan & keindahan desain.</i>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+    st.write("### Hasil Prediksi:")
+    st.write(f"Prediksi kelas: **{predicted_class[0]}**")
