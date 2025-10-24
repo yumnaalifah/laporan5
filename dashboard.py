@@ -123,6 +123,7 @@ if uploaded_file is not None:
 
     elif menu == "♻️ Klasifikasi Sampah":
     st.subheader("🌿 Hasil Klasifikasi Gambar")
+
     with st.spinner("💫 Sedang memproses gambar..."):
         # ====== Periksa input shape model ======
         input_shape = classifier.input_shape[1:4]  # contoh (224,224,3)
@@ -139,19 +140,21 @@ if uploaded_file is not None:
             img_array = np.expand_dims(img_array, axis=-1)
 
         img_array = np.expand_dims(img_array, axis=0)  # jadi (1, H, W, C)
+        st.write("🧩 Shape gambar setelah diproses:", img_array.shape)
 
         # ====== Prediksi ======
         prediction = classifier.predict(img_array)
         class_index = np.argmax(prediction)
         confidence = np.max(prediction)
 
-    waste_labels = ["Kaca", "Kardus", "Kertas", "Plastik", "Logam", "Residu"]
-    predicted_label = waste_labels[class_index] if class_index < len(waste_labels) else "Tidak Dikenali"
+        # ====== Label ======
+        waste_labels = ["Kaca", "Kardus", "Kertas", "Plastik", "Logam", "Residu"]
+        predicted_label = waste_labels[class_index] if class_index < len(waste_labels) else "Tidak Dikenali"
 
-    st.write(f"### 🌸 Jenis Sampah: **{predicted_label}**")
-    st.progress(float(confidence))
-    st.caption(f"Probabilitas: {confidence:.2%}")
-
+        # ====== Output ======
+        st.write(f"### 🌸 Jenis Sampah: **{predicted_label}**")
+        st.progress(float(confidence))
+        st.caption(f"Probabilitas: {confidence:.2%}")
 
         if confidence > 0.85:
             st.success("🌟 Prediksi sangat akurat!")
@@ -159,6 +162,7 @@ if uploaded_file is not None:
             st.warning("💬 Prediksi cukup baik, bisa ditingkatkan dengan dataset tambahan.")
         else:
             st.error("😿 Prediksi rendah — coba gambar lain.")
+
 
 else:
     st.info("⬅️ Silakan unggah gambar dari sidebar untuk memulai analisis.")
