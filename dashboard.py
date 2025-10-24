@@ -75,8 +75,8 @@ st.markdown("""
 # ==========================
 @st.cache_resource
 def load_models():
-    yolo_model = YOLO("Yumnaa Alifah_Laporan 4.pt")  # Model deteksi YOLO
-    classifier = tf.keras.models.load_model("classifier_model.h5")  # Model klasifikasi .h5
+    yolo_model = YOLO("Yumnaa_Alifah_Laporan_4.pt")  # Model deteksi YOLO
+    classifier = tf.keras.models.load_model("Yumnaa_Alifah_Laporan 2.h5")  # Model klasifikasi .h5
     return yolo_model, classifier
 
 yolo_model, classifier = load_models()
