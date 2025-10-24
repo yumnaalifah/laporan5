@@ -4,34 +4,73 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 import numpy as np
 from PIL import Image
-import cv2
 import time
 
 # ==========================
-# Konfigurasi Halaman
+# KONFIGURASI HALAMAN
 # ==========================
 st.set_page_config(
-    page_title="📸 Image Detection & Classification Dashboard",
+    page_title="💗 Smart Vision Dashboard",
     layout="wide",
-    page_icon="🤖"
+    page_icon="🌸"
 )
 
+# ==========================
+# CUSTOM CSS (Tema Pink)
+# ==========================
 st.markdown(
     """
     <style>
+    /* Background & layout */
     .main {
-        background-color: #f7f9fc;
+        background: linear-gradient(180deg, #ffe6f2 0%, #fff5fa 100%);
+        color: #4a154b;
+        font-family: 'Poppins', sans-serif;
     }
+    /* Judul besar */
+    h1 {
+        text-align: center;
+        color: #e75480;
+        font-weight: 800 !important;
+        text-shadow: 1px 1px 2px #ffd6e7;
+    }
+    /* Subjudul */
+    h2, h3 {
+        color: #d63384 !important;
+    }
+    /* Tombol */
     .stButton>button {
-        background-color: #4CAF50;
+        background-color: #ff80aa;
         color: white;
-        border-radius: 10px;
+        border-radius: 12px;
+        border: none;
         height: 3em;
+        font-weight: bold;
         width: 100%;
-        font-size: 16px;
+        box-shadow: 0px 3px 6px rgba(255, 182, 193, 0.6);
+        transition: 0.3s;
     }
     .stButton>button:hover {
-        background-color: #45a049;
+        background-color: #ff4da6;
+        transform: scale(1.05);
+    }
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #ffd6e7 0%, #fff0f6 100%);
+    }
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+        color: #d63384 !important;
+    }
+    /* Gaya progress bar */
+    .stProgress > div > div > div {
+        background-color: #ff66b2 !important;
+    }
+    /* Footer */
+    footer {
+        text-align: center;
+        color: gray;
+        padding-top: 15px;
+        font-size: 14px;
     }
     </style>
     """,
@@ -39,7 +78,7 @@ st.markdown(
 )
 
 # ==========================
-# Load Models
+# LOAD MODEL
 # ==========================
 @st.cache_resource
 def load_models():
@@ -47,45 +86,44 @@ def load_models():
     classifier = tf.keras.models.load_model("model/Yumnaa_Alifah_Laporan 2.h5")  # Model Klasifikasi Sampah
     return yolo_model, classifier
 
-with st.spinner("🔄 Sedang memuat model... Mohon tunggu sebentar"):
+with st.spinner("💞 Sedang memuat model, mohon tunggu..."):
     yolo_model, classifier = load_models()
     time.sleep(1)
-
-st.success("✅ Model berhasil dimuat!")
+st.success("🌸 Model berhasil dimuat!")
 
 # ==========================
-# Sidebar Menu
+# SIDEBAR
 # ==========================
 st.sidebar.title("⚙️ Pengaturan")
-menu = st.sidebar.radio("Pilih Mode Analisis:", ["📦 Deteksi Objek (YOLO)", "🧠 Klasifikasi Gambar (Waste)"])
+st.sidebar.markdown("Pilih mode yang ingin dijalankan:")
+menu = st.sidebar.radio("Mode:", ["💎 Deteksi Objek (YOLO)", "♻️ Klasifikasi Sampah"])
 st.sidebar.markdown("---")
-
 uploaded_file = st.sidebar.file_uploader("📤 Unggah Gambar", type=["jpg", "jpeg", "png"])
 
 # ==========================
-# Bagian Utama
+# KONTEN UTAMA
 # ==========================
-st.title("🎯 Aplikasi Deteksi & Klasifikasi Citra")
-st.markdown("**Dikembangkan oleh:** *Yumnaa Alifah*")
-st.markdown("Gunakan aplikasi ini untuk melakukan deteksi objek atau klasifikasi gambar secara otomatis dengan model AI!")
+st.title("💗 Smart Vision Dashboard")
+st.markdown("<h3 style='text-align:center;'>Aplikasi Deteksi & Klasifikasi Citra oleh <b>Yumnaa Alifah</b></h3>", unsafe_allow_html=True)
+st.write("Gunakan AI untuk mengenali objek dan mengklasifikasikan jenis sampah dengan cepat dan interaktif ✨")
 
 if uploaded_file is not None:
     img = Image.open(uploaded_file).convert("RGB")
     st.image(img, caption="🖼️ Gambar yang Diupload", use_container_width=True)
 
-    if menu == "📦 Deteksi Objek (YOLO)":
+    if menu == "💎 Deteksi Objek (YOLO)":
         st.subheader("🔍 Hasil Deteksi Objek")
-        with st.spinner("🚀 Sedang melakukan deteksi objek..."):
+        with st.spinner("🚀 Model sedang mendeteksi objek..."):
             results = yolo_model(img)
-            result_img = results[0].plot()  # hasil deteksi (gambar dengan box)
-            st.image(result_img, caption="📦 Hasil Deteksi Objek", use_container_width=True)
+            result_img = results[0].plot()
+            st.image(result_img, caption="💖 Hasil Deteksi Objek", use_container_width=True)
 
-        st.success("✅ Deteksi selesai!")
-        st.info("Model mendeteksi objek seperti **mobile**, **supercar**, atau **laptop** dari gambar.")
+        st.success("✨ Deteksi selesai!")
+        st.info("Model ini dapat mendeteksi kategori seperti **mobile**, **supercar**, dan **laptop**.")
 
-    elif menu == "🧠 Klasifikasi Gambar (Waste)":
-        st.subheader("♻️ Hasil Klasifikasi Gambar")
-        with st.spinner("🧩 Sedang memproses gambar..."):
+    elif menu == "♻️ Klasifikasi Sampah":
+        st.subheader("🌿 Hasil Klasifikasi Gambar")
+        with st.spinner("💫 Sedang memproses gambar..."):
             img_resized = img.resize((224, 224))
             img_array = image.img_to_array(img_resized)
             img_array = np.expand_dims(img_array, axis=0)
@@ -99,25 +137,31 @@ if uploaded_file is not None:
         waste_labels = ["Sampah Kaca", "Sampah Logam", "Sampah Kertas", "Sampah Plastik", "Sampah Organik"]
         predicted_label = waste_labels[class_index] if class_index < len(waste_labels) else "Tidak Dikenali"
 
-        st.write(f"### ♻️ Jenis Sampah: **{predicted_label}**")
+        st.markdown(f"<h3 style='color:#e75480;'>💡 Jenis Sampah: <b>{predicted_label}</b></h3>", unsafe_allow_html=True)
         st.progress(float(confidence))
-        st.caption(f"Probabilitas: {confidence:.2%}")
+        st.caption(f"💗 Tingkat Keyakinan Model: {confidence:.2%}")
 
-        if confidence > 0.80:
-            st.success("✅ Prediksi sangat akurat!")
-        elif confidence > 0.50:
-            st.warning("⚠️ Prediksi cukup akurat, namun bisa ditingkatkan.")
+        if confidence > 0.85:
+            st.success("🌟 Prediksi sangat akurat!")
+        elif confidence > 0.60:
+            st.warning("💬 Prediksi cukup baik, bisa ditingkatkan dengan dataset tambahan.")
         else:
-            st.error("❌ Prediksi rendah — coba gambar lain.")
+            st.error("😿 Prediksi rendah — coba gambar lain.")
 
 else:
     st.info("⬅️ Silakan unggah gambar dari sidebar untuk memulai analisis.")
 
 # ==========================
-# Footer
+# FOOTER
 # ==========================
 st.markdown("---")
 st.markdown(
-    "<p style='text-align:center; color:gray;'>© 2025 | Dashboard Deteksi & Klasifikasi Citra oleh <b>Yumnaa Alifah</b></p>",
+    """
+    <footer>
+        🌸 <b>Smart Vision Dashboard</b> © 2025 — dibuat dengan 💗 oleh <b>Yumnaa Alifah</b> <br>
+        <i>Menggabungkan kecerdasan buatan & keindahan desain.</i>
+    </footer>
+    """,
     unsafe_allow_html=True
 )
+
