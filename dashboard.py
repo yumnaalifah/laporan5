@@ -93,7 +93,7 @@ uploaded_file = st.sidebar.file_uploader("📤 Unggah Gambar", type=["jpg", "jpe
 # ==========================
 # Bagian Utama
 # ==========================
-st.title("🎯 Aplikasi Deteksi & Klasifikasi Citra")
+st.title("🌸 Aplikasi Deteksi & Klasifikasi Citra")
 st.markdown("Dikembangkan oleh: Yumnaa Alifah")
 st.markdown("Gunakan aplikasi ini untuk melakukan deteksi objek atau klasifikasi gambar secara otomatis dengan model AI!")
 
