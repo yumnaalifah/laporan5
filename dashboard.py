@@ -86,7 +86,7 @@ if uploaded_file is not None:
     elif menu == "🧠 Klasifikasi Gambar (Waste)":
         st.subheader("♻ Hasil Klasifikasi Gambar")
         with st.spinner("🧩 Sedang memproses gambar..."):
-            img_resized = img.resize((224, 224))
+            img_resized = img.resize((128, 128))
             img_array = image.img_to_array(img_resized)
             img_array = np.expand_dims(img_array, axis=0)
             img_array = img_array / 255.0
