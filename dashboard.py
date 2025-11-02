@@ -7,6 +7,15 @@ from PIL import Image
 import cv2
 
 # ==========================
+
+from tensorflow import keras
+
+# Load model lama (.h5)
+model = keras.models.load_model("Yumnaa_Alifah_Laporan 2.h5")
+
+# Simpan ulang sebagai .keras
+model.save("Yumnaa Alifah_Laporan 2.keras")
+
 # Load Models
 # ==========================
 @st.cache_resource
